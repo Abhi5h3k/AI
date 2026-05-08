@@ -1955,90 +1955,6 @@
   </div>
 
   <div class="block">
-    <h3>The context window — the model's "working memory"</h3>
-    <p>Every token in the context window attends to every other token via the attention mechanism. This means compute grows as O(n²) with sequence length. The context window is a hard limit — beyond it, the model sees nothing.</p>
-    <p>Modern limits: GPT-4 = 128K tokens. Claude 3 = 200K tokens. Gemini = 1M tokens. Your Llama running on Ollama is probably 4K–32K depending on the model.</p>
-  </div>
-
-  <div class="block">
-    <h3>Where RAG fits in the stack</h3>
-    <p>The model has knowledge frozen at training time. RAG (Retrieval-Augmented Generation) solves this by dynamically injecting relevant context into the prompt. This is exactly what your rag-sql system does — but now you can see exactly where in the pipeline that happens.</p>
-
-    <div class="flow">
-      <div class="flow-row">
-        <div class="flow-box in">
-          <div class="fb-title">User question</div>
-          <div class="fb-desc">"avg CQI for cell 4G_North?"</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box proc">
-          <div class="fb-title">Intent Classification</div>
-          <div class="fb-desc">5-category rules + LLM fallback</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box proc">
-          <div class="fb-title">Schema Retrieval</div>
-          <div class="fb-desc">embed query → Qdrant vector search</div>
-        </div>
-      </div>
-      <div class="flow-row">
-        <div class="flow-box store">
-          <div class="fb-title">Top-k schema chunks</div>
-          <div class="fb-desc">{table: nrcelldu, cols: [cqi, cell_id, …]}</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box proc">
-          <div class="fb-title">Prompt Construction</div>
-          <div class="fb-desc">schema + question + instructions</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box proc">
-          <div class="fb-title">LLM (Ollama/Llama)</div>
-          <div class="fb-desc">Transformer decoder · autoregressive</div>
-        </div>
-      </div>
-      <div class="flow-row">
-        <div class="flow-box out">
-          <div class="fb-title">Generated SQL</div>
-          <div class="fb-desc">SELECT AVG(cqi) FROM nrcelldu WHERE cell_id='4G_North'</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box proc">
-          <div class="fb-title">Validation</div>
-          <div class="fb-desc">syntax + safety checks</div>
-        </div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box out">
-          <div class="fb-title">Execute on DB</div>
-          <div class="fb-desc">return rows to user</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="key-concept">
-      <p><strong>Your vector embeddings in Qdrant</strong> are produced by an encoder-only Transformer (like BERT-family). It takes text → a single fixed vector representing its meaning. Semantic search works because similar meanings produce vectors that are geometrically close. The LLM that generates SQL is a decoder-only Transformer (GPT-family). These are two completely different models serving different roles — you're already using both architectures without necessarily thinking about it in those terms.</p>
-    </div>
-  </div>
-
-  <div class="block">
-    <h3>Timeline — the full evolution</h3>
-    <div class="timeline">
-      <div class="tl-item"><div class="tl-year">1943</div><div class="tl-dot"></div><div class="tl-content"><strong>McCulloch-Pitts Neuron</strong><span>Mathematical model of a biological neuron</span></div></div>
-      <div class="tl-item"><div class="tl-year">1986</div><div class="tl-dot"></div><div class="tl-content"><strong>Backpropagation popularized</strong><span>Rumelhart, Hinton, Williams — training deep networks becomes feasible</span></div></div>
-      <div class="tl-item"><div class="tl-year">1997</div><div class="tl-dot"></div><div class="tl-content"><strong>LSTM</strong><span>Hochreiter & Schmidhuber — solves vanishing gradient for sequences</span></div></div>
-      <div class="tl-item"><div class="tl-year">2013</div><div class="tl-dot"></div><div class="tl-content"><strong>Word2Vec</strong><span>Google — dense word embeddings, king−man+woman≈queen</span></div></div>
-      <div class="tl-item"><div class="tl-year">2014</div><div class="tl-dot"></div><div class="tl-content"><strong>Seq2Seq</strong><span>Encoder-decoder for translation (but fixed bottleneck)</span></div></div>
-      <div class="tl-item"><div class="tl-year">2015</div><div class="tl-dot"></div><div class="tl-content"><strong>Bahdanau Attention</strong><span>First attention mechanism added to seq2seq as a fix</span></div></div>
-      <div class="tl-item"><div class="tl-year">2017</div><div class="tl-dot"></div><div class="tl-content"><strong>Attention Is All You Need</strong><span>Vaswani et al. (Google) — the Transformer. Removes RNNs entirely.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2018</div><div class="tl-dot"></div><div class="tl-content"><strong>BERT + GPT-1</strong><span>First large pre-trained Transformers. Transfer learning era begins.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2020</div><div class="tl-dot"></div><div class="tl-content"><strong>GPT-3 (175B params)</strong><span>Few-shot learning, emergent capabilities, the scaling hypothesis</span></div></div>
-      <div class="tl-item"><div class="tl-year">2022</div><div class="tl-dot"></div><div class="tl-content"><strong>ChatGPT / RLHF</strong><span>SFT + RLHF turns base model into a helpful assistant</span></div></div>
-      <div class="tl-item"><div class="tl-year">2023</div><div class="tl-dot"></div><div class="tl-content"><strong>Llama, Mistral, open models</strong><span>Open-weight models — run locally, fine-tune yourself (your Ollama setup)</span></div></div>
-      <div class="tl-item"><div class="tl-year">2024+</div><div class="tl-dot"></div><div class="tl-content"><strong>Mixture of Experts, long context, multimodal</strong><span>Sparse activation, 1M token windows, vision + text in one model</span></div></div>
-    </div>
-  </div>
-
-  <div class="block">
     <h3>What to explore next</h3>
     <p>You now have the foundation. The next chapter covers everything that has happened <em>since</em> the Transformer — and the modern stack you'll actually build on.</p>
     <div class="tree">
@@ -2559,10 +2475,6 @@
         <div class="tree-node"><strong>Give it actions</strong> <em>— function calling · MCP · agents · harnesses</em></div>
         <div class="tree-node"><strong>Make it think harder</strong> <em>— chain-of-thought · reasoning models · MoA</em></div>
       </div>
-    </div>
-
-    <div class="key-concept">
-      <p><strong>Where your rag-sql project sits:</strong> it uses an embedding model (encoder Transformer) for Qdrant, a quantized decoder (Llama via Ollama / llama.cpp) for SQL generation, RAG to inject schema context, and could plug into Cursor as an MCP server to become an agent tool. You're using six of the concepts on this page — knowing the names just gives you the vocabulary to extend it.</p>
     </div>
   </div>
 
