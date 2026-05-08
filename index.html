@@ -1990,31 +1990,33 @@
   <div class="chapter-header">
     <div class="chapter-num">CHAPTER 09</div>
     <h2>The Modern Stack — Everything After the Transformer</h2>
-    <p class="subtitle">RAG, context windows, quantization, MoE, agents, MCP — what came when, and why</p>
+    <p class="subtitle">RAG, quantization, agents, reasoning models, MCP — what's actually used in production through 2026</p>
   </div>
 
   <div class="block">
     <h3>The chronological map</h3>
-    <p>The Transformer (2017) was the architectural breakthrough. Everything since has been about <em>scaling it up</em>, <em>making it cheaper</em>, <em>connecting it to tools</em>, and <em>letting it act</em>. Here's the order things happened:</p>
+    <p>The Transformer (2017) was the architectural breakthrough. Everything since has been about <em>scaling it up</em>, <em>making it cheaper</em>, <em>connecting it to tools</em>, and <em>letting it think and act</em>. This timeline only includes things that are <strong>actually used in production today</strong> — no hype, no toys.</p>
 
     <div class="timeline">
       <div class="tl-item"><div class="tl-year">2018</div><div class="tl-dot"></div><div class="tl-content"><strong>Pre-train + Fine-tune era (BERT, GPT-1)</strong><span>One huge pre-training run, then cheap task-specific fine-tuning. The "transfer learning" template.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2020</div><div class="tl-dot"></div><div class="tl-content"><strong>GPT-3 + the scaling laws</strong><span>175B parameters. Few-shot learning emerges from scale alone — no fine-tuning needed for many tasks.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2020</div><div class="tl-dot"></div><div class="tl-content"><strong>RAG (Retrieval-Augmented Generation)</strong><span>Lewis et al. — pair an LLM with a vector database. Inject fresh facts at inference time instead of retraining.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2021</div><div class="tl-dot"></div><div class="tl-content"><strong>LoRA</strong><span>Microsoft — fine-tune billion-parameter models by only training tiny low-rank adapter matrices. Democratized fine-tuning.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2022</div><div class="tl-dot"></div><div class="tl-content"><strong>InstructGPT / ChatGPT — RLHF</strong><span>SFT + reward model + PPO turns a base model into a helpful assistant. The chatbot era begins.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2022</div><div class="tl-dot"></div><div class="tl-content"><strong>Chain-of-Thought prompting</strong><span>"Let's think step by step" — eliciting reasoning by prompting alone. Foundation for later reasoning models.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2023</div><div class="tl-dot"></div><div class="tl-content"><strong>Open-weight models — Llama, Mistral</strong><span>Meta releases Llama. Suddenly anyone can run a frontier-class model locally.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2023</div><div class="tl-dot"></div><div class="tl-content"><strong>llama.cpp + GGUF + quantization (INT4/INT8)</strong><span>Compress 16-bit weights to 4-bit. A 70B model that needed 140GB now fits in 40GB. CPU inference becomes viable.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2023</div><div class="tl-dot"></div><div class="tl-content"><strong>Tool use / Function calling</strong><span>OpenAI ships function calling. Models stop just talking — they start invoking APIs, calculators, search.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2023</div><div class="tl-dot"></div><div class="tl-content"><strong>Multimodal (GPT-4V, Gemini, Claude 3)</strong><span>One model, multiple input types: text + image + audio + video. Same Transformer backbone, different tokenizers.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2023</div><div class="tl-dot"></div><div class="tl-content"><strong>Mixture of Experts (Mixtral, GPT-4)</strong><span>Sparse activation — only ~2 of 8 expert subnets fire per token. Bigger models, same inference cost.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2023</div><div class="tl-dot"></div><div class="tl-content"><strong>Long context (Claude 100K, Gemini 1M)</strong><span>Flash Attention, ring attention, sliding-window — engineering tricks that pushed context windows from 4K to 1M+.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2024</div><div class="tl-dot"></div><div class="tl-content"><strong>Agents (AutoGPT, ReAct, harnesses)</strong><span>Loop: think → act → observe → think. The model drives a multi-step process instead of answering once.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2024</div><div class="tl-dot"></div><div class="tl-content"><strong>MCP — Model Context Protocol</strong><span>Anthropic — a standard wire protocol for connecting LLMs to tools, data, and prompts. "USB for AI."</span></div></div>
-      <div class="tl-item"><div class="tl-year">2024</div><div class="tl-dot"></div><div class="tl-content"><strong>Reasoning models (o1, o3, R1)</strong><span>RL applied to chain-of-thought traces. Models that "think for longer" and dramatically outperform on math/code.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2024</div><div class="tl-dot"></div><div class="tl-content"><strong>Mixture of Agents (MoA)</strong><span>Multiple specialist agents collaborate. Outputs of one layer feed into the next. Ensemble at the agent level.</span></div></div>
-      <div class="tl-item"><div class="tl-year">2025</div><div class="tl-dot"></div><div class="tl-content"><strong>Computer use / agentic IDEs</strong><span>Claude controls a browser. Cursor / Codex agents edit code, run tests, open PRs. The harness becomes the product.</span></div></div>
+      <div class="tl-item"><div class="tl-year">2020</div><div class="tl-dot"></div><div class="tl-content"><strong>GPT-3 + scaling laws (Kaplan, Hoffmann)</strong><span>175B parameters. Few-shot learning emerges from scale alone. Chinchilla (2022) later refines the compute-optimal ratio.</span></div></div>
+      <div class="tl-item"><div class="tl-year">2020</div><div class="tl-dot"></div><div class="tl-content"><strong>RAG (Lewis et al.)</strong><span>Pair an LLM with a vector database. Inject fresh facts at inference time instead of retraining.</span></div></div>
+      <div class="tl-item"><div class="tl-year">2021</div><div class="tl-dot"></div><div class="tl-content"><strong>LoRA (Microsoft)</strong><span>Fine-tune billion-parameter models by training only tiny low-rank adapter matrices. Democratized fine-tuning.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Jan 2022</div><div class="tl-dot"></div><div class="tl-content"><strong>Chain-of-Thought (Wei et al.)</strong><span>"Let's think step by step" — eliciting reasoning by prompting alone. Foundation for later reasoning models.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Mar 2022</div><div class="tl-dot"></div><div class="tl-content"><strong>InstructGPT — RLHF</strong><span>SFT + reward model + PPO turns a base model into a helpful assistant. ChatGPT ships in November.</span></div></div>
+      <div class="tl-item"><div class="tl-year">May 2022</div><div class="tl-dot"></div><div class="tl-content"><strong>FlashAttention (Dao et al.)</strong><span>IO-aware attention kernel. 2–4× faster training, lower memory. The reason long context windows became feasible.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Feb 2023</div><div class="tl-dot"></div><div class="tl-content"><strong>Llama + llama.cpp + GGUF</strong><span>Meta releases Llama. Georgi Gerganov ports it to C++ with INT4 quantization. Local AI revolution begins.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Jun 2023</div><div class="tl-dot"></div><div class="tl-content"><strong>OpenAI function calling + vLLM</strong><span>Models start invoking APIs as structured JSON. vLLM ships PagedAttention — 24× higher throughput than HF Transformers.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Sep 2023</div><div class="tl-dot"></div><div class="tl-content"><strong>Mistral 7B + Mixtral (MoE)</strong><span>Open-weight model that beats Llama 2 13B. Mixtral 8×7B (Dec) brings sparse Mixture of Experts to open weights.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Nov 2023</div><div class="tl-dot"></div><div class="tl-content"><strong>GPT-4V + Claude 100K + Gemini 1M context</strong><span>Multimodal mainstream. Long context becomes table stakes via RoPE scaling, YaRN, ring attention.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Apr 2024</div><div class="tl-dot"></div><div class="tl-content"><strong>Llama 3 + speculative decoding everywhere</strong><span>Meta's Llama 3 (8B/70B). vLLM, llama.cpp, TGI all ship speculative decoding by default. 2–3× speedup for free.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Sep 2024</div><div class="tl-dot"></div><div class="tl-content"><strong>OpenAI o1 — test-time compute</strong><span>RL on reasoning traces. Models "think for longer" and dominate math/code. The biggest paradigm shift since RLHF.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Nov 2024</div><div class="tl-dot"></div><div class="tl-content"><strong>MCP (Model Context Protocol) — Anthropic</strong><span>Standardized wire protocol connecting LLMs to tools, data, prompts. Becomes industry standard through 2025.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Jan 2025</div><div class="tl-dot"></div><div class="tl-content"><strong>DeepSeek-R1 + GRPO</strong><span>Open-weight reasoning model matching o1. Introduces GRPO (Group Relative Policy Optimization) + RLVR — RL with programmatic verifiable rewards. <em>The</em> training story of 2025.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Feb 2025</div><div class="tl-dot"></div><div class="tl-content"><strong>Hybrid architectures go mainstream</strong><span>Mamba-2, Jamba, Falcon-Mamba, Nemotron-H — Transformer + State Space Model hybrids. Linear-time inference for long context.</span></div></div>
+      <div class="tl-item"><div class="tl-year">Mid 2025</div><div class="tl-dot"></div><div class="tl-content"><strong>Hybrid reasoning + long-horizon agents</strong><span>Claude 3.7 / 4 "extended thinking" toggle. SWE-bench Verified saturates. Cursor / Claude Code / Codex agents handle multi-hour autonomous tasks.</span></div></div>
+      <div class="tl-item"><div class="tl-year">2025–26</div><div class="tl-dot"></div><div class="tl-content"><strong>MCP ecosystem maturity</strong><span>Sampling, Roots, Elicitation primitives standardized. Hundreds of MCP servers in the wild. Cursor / Claude Desktop / VS Code / Zed all speak MCP natively.</span></div></div>
+      <div class="tl-item"><div class="tl-year">2026</div><div class="tl-dot"></div><div class="tl-content"><strong>The current frontier</strong><span>Reasoning + agents + tools fused into single deployable artifacts. Inference-time compute as a knob you turn. Local 30B-class models on consumer GPUs via 4-bit quant + speculative decoding.</span></div></div>
     </div>
   </div>
 
@@ -2291,7 +2293,16 @@
 
   <div class="block">
     <h3>Concept 7 · MCP — Model Context Protocol</h3>
-    <p>Function calling is per-application. Every team re-invents tool plumbing. <span class="hl">MCP</span> (Anthropic, 2024) standardizes it: a client-server protocol where any LLM can talk to any tool/data source as long as both speak MCP. Think "USB for AI."</p>
+    <p>Function calling is per-application. Every team re-invents tool plumbing. <span class="hl">MCP</span> (Anthropic, Nov 2024) standardizes it: a client-server protocol where any LLM can talk to any tool / data source / prompt-library as long as both speak MCP. Think "USB for AI" — and by 2026 it has won as the de facto standard, the way LSP won for editors.</p>
+
+    <p>MCP exposes four primitive types over JSON-RPC:</p>
+    <div class="pill-row">
+      <span class="pill purple">Tools — actions the model can invoke</span>
+      <span class="pill green">Resources — data the model can read</span>
+      <span class="pill pink">Prompts — reusable templates</span>
+      <span class="pill yellow">Sampling — server asks model to generate</span>
+    </div>
+    <p>Plus newer 2025 additions: <strong>Roots</strong> (which directories/URIs the host exposes to a server) and <strong>Elicitation</strong> (server asks the user a question mid-flow — "which env should I deploy to?"). These are what turned MCP from "function calling 2.0" into a real two-way agent protocol.</p>
 
     <div class="svg-diagram">
       <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MCP architecture">
@@ -2340,7 +2351,7 @@
     </div>
 
     <div class="key-concept">
-      <p>Before MCP: every product re-built tool integrations from scratch. After MCP: write your tool as an MCP server <em>once</em>, and Cursor / Claude Desktop / any future MCP host can use it. This is exactly the protocol the MCP servers in your Cursor setup are speaking.</p>
+      <p>Before MCP: every product re-built tool integrations from scratch. After MCP: write your tool as an MCP server <em>once</em>, and Cursor, Claude Desktop, VS Code, Zed, and every cloud agent platform can use it. By 2026 there are hundreds of community MCP servers (GitHub, Postgres, Slack, Linear, Sentry, Datadog, Notion, …) and SDKs in TypeScript, Python, Rust, Go, Kotlin, C#. This is exactly the protocol the MCP servers in your Cursor setup are speaking.</p>
     </div>
   </div>
 
@@ -2439,29 +2450,297 @@
   </div>
 
   <div class="block">
-    <h3>Concept 10 · Reasoning models (o1, R1, "thinking")</h3>
-    <p>Standard LLMs answer immediately. <span class="hl">Reasoning models</span> are trained to first produce a long internal chain-of-thought, then summarize the answer. The breakthrough: applying reinforcement learning to <em>the reasoning trace itself</em> — rewarding traces that reach correct answers, not just the final answer.</p>
+    <h3>Concept 10 · Test-Time Compute &amp; Reasoning Models</h3>
+    <p>For 7 years the recipe was: <em>spend more compute at training time → get a smarter model at inference</em>. In Sep 2024, OpenAI's <strong>o1</strong> flipped the script: spend more compute <em>at inference time</em> (let the model think longer) and you get the same gain. This is the biggest shift since RLHF.</p>
 
     <div class="flow">
       <div class="flow-row">
         <div class="flow-box in">
           <div class="fb-title">Hard problem</div>
-          <div class="fb-desc">"Prove that…"</div>
+          <div class="fb-desc">competition math, hard SQL, tricky bug</div>
         </div>
         <div class="flow-arrow">→</div>
         <div class="flow-box proc" style="flex: 2;">
-          <div class="fb-title">Hidden thinking tokens</div>
-          <div class="fb-desc">10K–100K tokens of self-reflection, exploration, backtracking</div>
+          <div class="fb-title">Internal "thinking" tokens</div>
+          <div class="fb-desc">1K–100K tokens · self-check · backtrack · explore branches</div>
         </div>
         <div class="flow-arrow">→</div>
         <div class="flow-box out">
           <div class="fb-title">Final answer</div>
-          <div class="fb-desc">concise, verified</div>
+          <div class="fb-desc">concise · usually correct</div>
         </div>
       </div>
     </div>
 
-    <p><strong>Examples:</strong> OpenAI o1/o3, DeepSeek-R1, Claude 3.7 Sonnet (extended thinking), Gemini 2.0 Flash Thinking. The cost: massive token usage. The benefit: state-of-the-art on math, code, and graduate-level science.</p>
+    <table class="compare">
+      <tr>
+        <th>Model (released)</th>
+        <th>Open / Closed</th>
+        <th>Notable trait</th>
+      </tr>
+      <tr><td>OpenAI o1 / o3 / o4-mini (2024–25)</td><td>Closed</td><td>First, set the bar. Hidden CoT.</td></tr>
+      <tr><td>DeepSeek-R1 (Jan 2025)</td><td>Open weights</td><td>Matches o1, full CoT visible, GRPO recipe public</td></tr>
+      <tr><td>Qwen QwQ / Qwen3-Thinking</td><td>Open weights</td><td>Strong open replication, runs locally</td></tr>
+      <tr><td>Claude 3.7 / 4 — Extended Thinking</td><td>Closed</td><td>Toggleable: same model, with/without thinking</td></tr>
+      <tr><td>Gemini 2.0/2.5 Flash Thinking</td><td>Closed</td><td>Cheap reasoning at scale</td></tr>
+    </table>
+
+    <div class="key-concept">
+      <p><strong>The new knob:</strong> at inference time you can now <em>choose</em> how much to spend per query. A factual lookup? Skip thinking. A debugging session? Crank thinking budget to 32K tokens. Modern APIs (OpenAI, Anthropic) expose <code>reasoning_effort</code> / <code>thinking_budget</code> parameters. By 2026, this is just a regular dial in your prompt config.</p>
+    </div>
+  </div>
+
+  <div class="block">
+    <h3>Concept 11 · GRPO &amp; RLVR — how reasoning models are actually trained</h3>
+    <p>RLHF needs humans to label "which answer is better." That doesn't scale to math problems with 10,000-token solutions. <span class="hl">RLVR</span> (Reinforcement Learning with Verifiable Rewards) replaces the human reward model with a <em>program</em>: run the unit tests, check the math, parse the SQL — if it passes, reward = 1.</p>
+
+    <p><span class="hl-pink">GRPO</span> (Group Relative Policy Optimization, DeepSeek) is the lightweight RL algorithm that made this practical. Instead of training a separate value/critic network like PPO, it samples multiple candidate solutions per prompt and uses their <em>relative</em> rewards as the signal.</p>
+
+    <div class="svg-diagram">
+      <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GRPO + RLVR training loop">
+        <defs>
+          <marker id="arr-grpo" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#888"/>
+          </marker>
+        </defs>
+        <!-- prompt -->
+        <rect x="20" y="20" width="180" height="50" rx="6" fill="#1a1a26" stroke="#fff"/>
+        <text x="110" y="42" text-anchor="middle" font-family="DM Mono, monospace" font-size="12" fill="#fff">Prompt</text>
+        <text x="110" y="58" text-anchor="middle" font-family="DM Mono, monospace" font-size="9" fill="#888">"Solve: 2x + 3 = 11"</text>
+
+        <!-- model samples N -->
+        <line x1="200" y1="45" x2="238" y2="45" stroke="#888" marker-end="url(#arr-grpo)"/>
+        <rect x="240" y="20" width="160" height="50" rx="6" fill="#1a1a26" stroke="#7c6aff"/>
+        <text x="320" y="42" text-anchor="middle" font-family="DM Mono, monospace" font-size="12" fill="#7c6aff">Policy (LLM)</text>
+        <text x="320" y="58" text-anchor="middle" font-family="DM Mono, monospace" font-size="9" fill="#888">samples N=8 solutions</text>
+
+        <!-- 4 sample boxes -->
+        <g font-family="DM Mono, monospace" font-size="10" text-anchor="middle">
+          <rect x="430" y="10"  width="120" height="34" rx="6" fill="#1a1a26" stroke="#2a2a40"/><text x="490" y="32" fill="#cdd6f4">"x = 4"  ✓</text>
+          <rect x="430" y="50"  width="120" height="34" rx="6" fill="#1a1a26" stroke="#2a2a40"/><text x="490" y="72" fill="#cdd6f4">"x = 5"  ✗</text>
+          <rect x="430" y="90"  width="120" height="34" rx="6" fill="#1a1a26" stroke="#2a2a40"/><text x="490" y="112" fill="#cdd6f4">"x = 4"  ✓</text>
+          <rect x="430" y="130" width="120" height="34" rx="6" fill="#1a1a26" stroke="#2a2a40"/><text x="490" y="152" fill="#cdd6f4">"x = -7" ✗</text>
+        </g>
+        <text x="490" y="180" text-anchor="middle" font-family="DM Mono, monospace" font-size="10" fill="#888">… (8 total samples)</text>
+
+        <!-- verifier -->
+        <line x1="550" y1="90" x2="588" y2="90" stroke="#888" marker-end="url(#arr-grpo)"/>
+        <rect x="590" y="65" width="110" height="50" rx="6" fill="#1a1a26" stroke="#ffd96a"/>
+        <text x="645" y="87" text-anchor="middle" font-family="DM Mono, monospace" font-size="12" fill="#ffd96a">Verifier</text>
+        <text x="645" y="103" text-anchor="middle" font-family="DM Mono, monospace" font-size="9" fill="#888">code · math · regex</text>
+
+        <!-- rewards -->
+        <line x1="645" y1="115" x2="645" y2="200" stroke="#888" marker-end="url(#arr-grpo)"/>
+        <rect x="540" y="205" width="220" height="50" rx="6" fill="#1a1a26" stroke="#6affd4"/>
+        <text x="650" y="227" text-anchor="middle" font-family="DM Mono, monospace" font-size="11" fill="#6affd4">Rewards: [1, 0, 1, 0, …]</text>
+        <text x="650" y="243" text-anchor="middle" font-family="DM Mono, monospace" font-size="9" fill="#888">advantage = (r − group_mean) / group_std</text>
+
+        <!-- update arrow back to policy -->
+        <path d="M540,230 Q300,260 320,75" stroke="#ff6a9d" stroke-width="1.5" fill="none" stroke-dasharray="4 4" marker-end="url(#arr-grpo)"/>
+        <text x="240" y="275" font-family="DM Mono, monospace" font-size="10" fill="#ff6a9d">↑ GRPO update — push up rewarded traces, push down failed traces</text>
+
+        <!-- caption -->
+        <text x="360" y="305" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="11" font-style="italic" fill="#888">No human labelers · no separate reward model · no critic network</text>
+      </svg>
+      <div class="svg-caption">GRPO + RLVR: scale RL training by replacing humans with verifiers</div>
+    </div>
+
+    <div class="key-concept">
+      <p><strong>Why this matters for your work:</strong> RLVR works for anything you can <em>verify programmatically</em> — and SQL execution is a perfect verifier. By 2025–26, fine-tuning a small SQL-specialized model with GRPO on "did the query run + return correct rows?" is a real, accessible recipe (TRL, Unsloth, verl all support it). Worth knowing this exists when you outgrow pure prompting.</p>
+    </div>
+  </div>
+
+  <div class="block">
+    <h3>Concept 12 · Hybrid architectures: Mamba &amp; State Space Models</h3>
+    <p>Pure attention is O(n²). For 1M-token contexts that becomes painful. <span class="hl">State Space Models</span> (Mamba, Dec 2023) revisit RNN-style linear-time sequence processing, but with selective gating that — empirically — competes with attention on quality.</p>
+
+    <p>By 2025, the winning recipe turned out to be <strong>hybrid</strong>: a few Transformer layers (for precise recall) interleaved with many Mamba/SSM layers (for cheap long context).</p>
+
+    <table class="compare">
+      <tr>
+        <th>Architecture</th>
+        <th>Compute per token</th>
+        <th>Memory per token</th>
+        <th>Long-context behavior</th>
+      </tr>
+      <tr>
+        <td>Pure Transformer</td>
+        <td class="before">O(n) · grows with seq</td>
+        <td class="before">O(n) · KV cache grows</td>
+        <td>Best recall, but expensive</td>
+      </tr>
+      <tr>
+        <td>Pure SSM (Mamba)</td>
+        <td class="after">O(1) · constant</td>
+        <td class="after">O(1) · constant</td>
+        <td>Cheap, weaker on exact recall</td>
+      </tr>
+      <tr>
+        <td><strong>Hybrid (Jamba, Nemotron-H)</strong></td>
+        <td class="after">~O(1) for most layers</td>
+        <td class="after">Mostly constant</td>
+        <td>Near-Transformer quality at SSM cost</td>
+      </tr>
+    </table>
+
+    <p><strong>Production-deployed hybrids (2025–26):</strong> AI21 <em>Jamba 1.5</em>, NVIDIA <em>Nemotron-H</em>, TII <em>Falcon-Mamba</em>, Zyphra <em>Zamba</em>. You won't write Mamba code by hand — but if a model card says "hybrid" or "SSM," now you know what's inside and why it's faster on long inputs.</p>
+  </div>
+
+  <div class="block">
+    <h3>Concept 13 · Speculative Decoding — the silent 2× speedup</h3>
+    <p>Generation is sequential: predict token, append, predict next. Each step needs a full forward pass through 70B parameters. <span class="hl">Speculative decoding</span> uses a small "draft" model to propose <em>k</em> tokens at once, then the big model verifies all <em>k</em> in a single parallel pass. Accepted tokens are kept; the first rejected one resets the draft.</p>
+
+    <div class="svg-diagram">
+      <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Speculative decoding">
+        <defs>
+          <marker id="arr-spec" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#888"/>
+          </marker>
+        </defs>
+        <!-- prompt -->
+        <rect x="20" y="20" width="160" height="44" rx="6" fill="#1a1a26" stroke="#fff"/>
+        <text x="100" y="40" text-anchor="middle" font-family="DM Mono, monospace" font-size="11" fill="#fff">Prompt + tokens so far</text>
+        <text x="100" y="56" text-anchor="middle" font-family="DM Mono, monospace" font-size="9" fill="#888">"SELECT * FROM"</text>
+
+        <!-- draft model -->
+        <line x1="180" y1="42" x2="218" y2="42" stroke="#888" marker-end="url(#arr-spec)"/>
+        <rect x="220" y="20" width="160" height="44" rx="6" fill="#1a1a26" stroke="#6affd4"/>
+        <text x="300" y="40" text-anchor="middle" font-family="DM Mono, monospace" font-size="11" fill="#6affd4">Draft model (1B)</text>
+        <text x="300" y="56" text-anchor="middle" font-family="DM Mono, monospace" font-size="9" fill="#888">cheap · fast · proposes 4 tokens</text>
+
+        <!-- proposed tokens -->
+        <g font-family="DM Mono, monospace" font-size="11" text-anchor="middle">
+          <rect x="395" y="20"  width="80" height="44" rx="6" fill="#1a1a26" stroke="#6affd4"/><text x="435" y="46" fill="#6affd4">customers</text>
+          <rect x="485" y="20"  width="80" height="44" rx="6" fill="#1a1a26" stroke="#6affd4"/><text x="525" y="46" fill="#6affd4">WHERE</text>
+          <rect x="575" y="20"  width="80" height="44" rx="6" fill="#1a1a26" stroke="#6affd4"/><text x="615" y="46" fill="#6affd4">id</text>
+          <rect x="395" y="74"  width="80" height="44" rx="6" fill="#1a1a26" stroke="#6affd4"/><text x="435" y="100" fill="#6affd4">=</text>
+        </g>
+
+        <!-- big model verifies in parallel -->
+        <rect x="220" y="140" width="440" height="44" rx="6" fill="#1a1a26" stroke="#7c6aff"/>
+        <text x="440" y="160" text-anchor="middle" font-family="DM Mono, monospace" font-size="11" fill="#7c6aff">Target model (70B) — verifies ALL 4 in ONE forward pass</text>
+        <text x="440" y="178" text-anchor="middle" font-family="DM Mono, monospace" font-size="9" fill="#888">checks: would I have produced these same tokens?</text>
+
+        <line x1="440" y1="118" x2="440" y2="138" stroke="#888" marker-end="url(#arr-spec)"/>
+
+        <!-- result -->
+        <g font-family="DM Mono, monospace" font-size="11" text-anchor="middle">
+          <rect x="220" y="200" width="80" height="32" rx="6" fill="#0a3a1a" stroke="#6affd4"/><text x="260" y="220" fill="#6affd4">✓ accept</text>
+          <rect x="310" y="200" width="80" height="32" rx="6" fill="#0a3a1a" stroke="#6affd4"/><text x="350" y="220" fill="#6affd4">✓ accept</text>
+          <rect x="400" y="200" width="80" height="32" rx="6" fill="#0a3a1a" stroke="#6affd4"/><text x="440" y="220" fill="#6affd4">✓ accept</text>
+          <rect x="490" y="200" width="80" height="32" rx="6" fill="#3a0a0a" stroke="#ff6a9d"/><text x="530" y="220" fill="#ff6a9d">✗ reject</text>
+          <rect x="580" y="200" width="80" height="32" rx="6" fill="#1a1a26" stroke="#888"/><text x="620" y="220" fill="#888">discard</text>
+        </g>
+      </svg>
+      <div class="svg-caption">Speculative decoding — accept the matches, discard the rest. 2–3× faster on average.</div>
+    </div>
+
+    <p><strong>Where you'll see it:</strong> vLLM, TGI, llama.cpp, SGLang, Ollama, every commercial API. By 2025–26, it's not optional — every production inference stack runs it by default. Variants: <em>EAGLE</em>, <em>Medusa</em>, <em>self-speculation</em> (no separate draft model needed).</p>
+  </div>
+
+  <div class="block">
+    <h3>Concept 14 · Production inference stacks — beyond llama.cpp</h3>
+    <p>llama.cpp is for <em>local single-user</em> inference. For serving thousands of concurrent users, you need a different stack — one that batches requests, manages KV cache memory, and supports speculative decoding at scale.</p>
+
+    <table class="compare">
+      <tr>
+        <th>Stack</th>
+        <th>Sweet spot</th>
+        <th>Key feature</th>
+      </tr>
+      <tr>
+        <td><strong>llama.cpp / Ollama</strong></td>
+        <td>Local · single user · CPU+GPU</td>
+        <td>GGUF quantization, runs anywhere</td>
+      </tr>
+      <tr>
+        <td><strong>vLLM</strong></td>
+        <td>High-throughput GPU serving</td>
+        <td>PagedAttention — packs KV cache like virtual memory</td>
+      </tr>
+      <tr>
+        <td><strong>SGLang</strong></td>
+        <td>Structured generation, agents</td>
+        <td>RadixAttention — caches prefixes across requests</td>
+      </tr>
+      <tr>
+        <td><strong>TensorRT-LLM</strong></td>
+        <td>NVIDIA GPUs · max throughput</td>
+        <td>Hand-tuned CUDA kernels, in-flight batching</td>
+      </tr>
+      <tr>
+        <td><strong>HuggingFace TGI</strong></td>
+        <td>Easy deploy · HF ecosystem</td>
+        <td>Drop-in for any HF model</td>
+      </tr>
+    </table>
+
+    <div class="key-concept">
+      <p><strong>Rule of thumb (2026):</strong> running on your laptop → <em>Ollama / llama.cpp</em>. Serving an internal team (10–100 QPS) → <em>vLLM</em>. Building an agent platform with shared system prompts → <em>SGLang</em> (its prefix caching shines when 1000 agents share the same 5K-token system prompt). Behind a paid API at scale → <em>TensorRT-LLM</em> on H100/B200.</p>
+    </div>
+  </div>
+
+  <div class="block">
+    <h3>When to use what — the practical decision matrix</h3>
+    <p>The hardest part of using all this isn't understanding any single concept — it's knowing which tool to reach for. Here's the rough decision tree you'll actually use:</p>
+
+    <table class="compare">
+      <tr>
+        <th>Your problem</th>
+        <th>Reach for</th>
+        <th>Avoid</th>
+      </tr>
+      <tr>
+        <td>Model doesn't know our private docs / DB schema</td>
+        <td class="after">RAG (vector DB + retrieval)</td>
+        <td class="before">Fine-tuning · stuffing 1M tokens of context</td>
+      </tr>
+      <tr>
+        <td>Model needs to follow a specific style / format consistently</td>
+        <td class="after">SFT or LoRA fine-tune on 100–10k examples</td>
+        <td class="before">RAG · long system prompts</td>
+      </tr>
+      <tr>
+        <td>Model hallucinates on rare technical terms (e.g. <code>nrcelldu</code>)</td>
+        <td class="after">RAG with synonym enrichment, or LoRA</td>
+        <td class="before">Just prompting harder</td>
+      </tr>
+      <tr>
+        <td>Need to reason through hard math / multi-step bugs</td>
+        <td class="after">Reasoning model (o-series, R1, Claude extended thinking)</td>
+        <td class="before">Cheap chat model with longer prompts</td>
+      </tr>
+      <tr>
+        <td>Need to read / process a 200-page document end-to-end</td>
+        <td class="after">Long-context model (Gemini 1M, Claude 200K)</td>
+        <td class="before">Naive chunked RAG (loses cross-references)</td>
+      </tr>
+      <tr>
+        <td>Need to take multi-step actions (edit files, run tests, deploy)</td>
+        <td class="after">Agent loop + MCP tools + a real harness</td>
+        <td class="before">A single LLM call with a long prompt</td>
+      </tr>
+      <tr>
+        <td>Need cheap, private, fully offline inference</td>
+        <td class="after">Quantized open-weight model on Ollama / llama.cpp</td>
+        <td class="before">A frontier API for everything</td>
+      </tr>
+      <tr>
+        <td>Serving 100+ QPS to internal users</td>
+        <td class="after">vLLM / SGLang / TGI + speculative decoding</td>
+        <td class="before">Single-process Ollama</td>
+      </tr>
+      <tr>
+        <td>Want to specialize a model on a verifiable task (SQL, code, math)</td>
+        <td class="after">GRPO / RLVR fine-tune (TRL, Unsloth, verl)</td>
+        <td class="before">Classic RLHF (needs human labelers)</td>
+      </tr>
+      <tr>
+        <td>Want your tool to plug into many AI clients</td>
+        <td class="after">Expose it as an MCP server</td>
+        <td class="before">Custom HTTP adapter per client</td>
+      </tr>
+    </table>
   </div>
 
   <div class="block">
@@ -2469,12 +2748,16 @@
     <div class="tree">
       <div class="tree-node root"><strong>Foundation: the Transformer (2017)</strong></div>
       <div class="tree-children">
-        <div class="tree-node"><strong>Scale it</strong> <em>— pretraining + RLHF → GPT-4, Claude, Gemini</em></div>
-        <div class="tree-node"><strong>Make it cheaper</strong> <em>— quantization · MoE · LoRA · distillation · llama.cpp</em></div>
+        <div class="tree-node"><strong>Scale it</strong> <em>— pretraining · scaling laws · RLHF · constitutional AI</em></div>
+        <div class="tree-node"><strong>Make it cheaper</strong> <em>— quantization · MoE · LoRA · llama.cpp · vLLM · speculative decoding · SSM/hybrid</em></div>
         <div class="tree-node"><strong>Give it knowledge</strong> <em>— RAG · long context · multimodal</em></div>
         <div class="tree-node"><strong>Give it actions</strong> <em>— function calling · MCP · agents · harnesses</em></div>
-        <div class="tree-node"><strong>Make it think harder</strong> <em>— chain-of-thought · reasoning models · MoA</em></div>
+        <div class="tree-node"><strong>Make it think harder</strong> <em>— chain-of-thought · reasoning models · GRPO/RLVR · test-time compute</em></div>
       </div>
+    </div>
+
+    <div class="key-concept">
+      <p><strong>Where your rag-sql project sits in 2026:</strong> you already use an embedding model (encoder Transformer) for Qdrant, a quantized decoder (Llama via Ollama / llama.cpp) for SQL generation, and RAG to inject schema context. The natural next steps: (1) expose it as an <em>MCP server</em> so Cursor's agent can call it directly, (2) move serving to <em>vLLM</em> when you outgrow single-user, (3) try a small <em>GRPO/RLVR</em> fine-tune where the verifier is "did the SQL execute and return the right rows?", and (4) optionally route hard queries to a <em>reasoning model</em> with a thinking budget. You're already using six of the concepts on this page — knowing the names just gives you the vocabulary to extend it.</p>
     </div>
   </div>
 
